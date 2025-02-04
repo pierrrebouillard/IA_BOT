@@ -1,0 +1,62 @@
+def scrape_and_store_playerstat(url, league):
+    try:
+        response = requests.get(url)
+    except requests.RequestException as e:
+        print(f"Request failed: {e}")
+        return
+
+
+    try:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        #trouve le tableau avec la class css class="min_width sortable stats_table shade_zero now_sortable sticky_table eq2 re2 le2"
+        match_table = soup.find('table', {'class': 'stats_table'})
+        match_table = soup.find_all('table', {'class': 'stats_table'})
+        if match_table is None:
+            print("No matching table found on the page.")
+            return
+    except Exception as e:
+        print(f"Failed to parse data: {e}")
+        return
+
+    try:
+        print("Match table found: Processing data...")
+        html_io = StringIO(str(match_table))
+        df = pd.read_html(html_io)[1]
+        print(df)
+    except Exception as e:
+        print(f"Failed to parse data: {e}")
+        return
+
+    try:
+        conn = sqlite3.connect('football_stats.db')
+        cursor = conn.cursor()
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return
+
+    try:
+        for _, row in df.iterrows():
+            cursor.execute(f'''
+            INSERT INTO {league}_PlayerStats (
+                Rank, Player, Nation, Position, Team, Age, BirthYear, Matches, Starts,
+                Minutes, Completed90s, Goals, Assists, GoalsPlusAssists, GoalsNonPenalty,
+                PenaltiesMade, PenaltiesAttempted, YellowCards, RedCards, ExpectedGoals,
+                NonPenaltyExpectedGoals, ExpectedAssist, NonPenaltyxGPlusxA, ProgressiveCarries,
+                ProgressivePasses, ProgressiveRuns, SeasonGoals, SeasonAssists, SeasonGoalsPlusAssists,
+                SeasonGoalsNonPenalty, SeasonGoalsPlusAssistsNonPenalty, SeasonxG, SeasonxA,
+                SeasonxGPlusxA, SeasonnpxG, SeasonnpxGPlusxA
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                row['Clt'], row['Joueur'], row['Nation'], row['Pos'], row['Équipe'], row['Âge'],
+                row['Naissance'], row['MJ'], row['Titulaire'], row['Min'], row['90'], row['Buts'],
+                row['PD'], row['B+PD'], row['B-PénM'], row['PénM'], row['PénT'], row['CJ'], row['CR'],
+                row['xG'], row['npxG'], row['xAG'], row['npxG+xAG'], row['PrgC'], row['PrgP'],
+                row['PrgR'], row['Buts'], row['PD'], row['B+PD'], row['B-PénM'], row['B+PD-PénM'],
+                row['xG'], row['xAG'], row['xG+xAG'], row['npxG'], row['npxG+xAG']
+            ))
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return
+
+    conn.commit()
+    conn.close()
