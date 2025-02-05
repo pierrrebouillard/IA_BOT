@@ -79,15 +79,17 @@ def initialize_db():
             SeasonnpxGPlusxA REAL
         )
         ''')
+    #delete the table Users
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT,
+            token TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
-
-
-def get_next_matches(url, league_name):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    match_results_table = soup.find('table', {'class': 'stats_table'})
-
 
 def scrape_and_store_playerstat(url, league):
     try:
@@ -100,7 +102,7 @@ def scrape_and_store_playerstat(url, league):
     try:
         soup = BeautifulSoup(response.text, 'html.parser')
         #trouve le tableau avec la class css class="min_width sortable stats_table shade_zero now_sortable sticky_table eq2 re2 le2"
-        match_table = soup.find('div', {'id': 'all_stats_standard'})
+        match_table = soup.find('table', {'id': 'stats_standard'})
         if match_table is None:
             print("No matching table found on the page.")
             return
@@ -112,7 +114,7 @@ def scrape_and_store_playerstat(url, league):
         print("Match table found: Processing data...")
         html_io = StringIO(str(match_table))
         print(html_io)
-        df = pd.read_html(html_io)[1]
+        df = pd.read_html(html_io)[0]
         print(df)
     except Exception as e:
         print(f"Failed to parse data: {e}")
@@ -151,7 +153,6 @@ def scrape_and_store_playerstat(url, league):
 
     conn.commit()
     conn.close()
-
 
 
 def scrape_and_store_data(url, league_name):
