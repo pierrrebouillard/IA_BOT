@@ -1,75 +1,83 @@
-'use client';
+"use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Message, Bet, BetType } from './types';
-import { AlertTriangle, Target, Hash, Goal, Trophy } from 'lucide-react'; // ✅ Ajout des icônes
+import { Message } from './types';
+import { AlertTriangle, Target, Hash, Goal, Trophy } from 'lucide-react';
 import ChatMessage from './components/ChatMessage';
-import Sidebar from './components/Sidebar';
 
-const CHAMPIONSHIPS: { [key: string]: string[] } = {
+const CHAMPIONSHIPS = {
   Football: ["Ligue 1", "Premier League", "La Liga"],
-  Basketball: ["NBA", "EuroLeague"],
-  Tennis: ["Roland Garros", "Wimbledon"],
-  Baseball: ["MLB", "Nippon League"],
-  "Formule 1": ["Grand Prix Monaco", "Grand Prix Italie"],
-  Rugby: ["Top 14", "Six Nations"]
 };
 
-// ✅ Liste des matchs par championnat
-const MATCHES: { [key: string]: string[] } = {
+const MATCHES = {
   "Ligue 1": ["Marseille vs PSG", "Lyon vs Monaco", "Nice vs Rennes"],
-  "Premier League": ["Manchester United vs Liverpool", "Chelsea vs Arsenal"],
-  "La Liga": ["Real Madrid vs Barcelona", "Atletico Madrid vs Sevilla"],
-  NBA: ["Lakers vs Celtics", "Warriors vs Heat"],
-  EuroLeague: ["Barcelona vs CSKA Moscow", "Olympiacos vs Fenerbahce"],
-  "Roland Garros": ["Djokovic vs Nadal", "Alcaraz vs Tsitsipas"],
-  Wimbledon: ["Federer vs Murray", "Medvedev vs Zverev"],
-  MLB: ["Yankees vs Red Sox", "Dodgers vs Cubs"],
-  "Nippon League": ["Giants vs Tigers"],
-  "Grand Prix Monaco": ["Verstappen vs Hamilton"],
-  "Grand Prix Italie": ["Leclerc vs Sainz"],
-  "Top 14": ["Toulouse vs La Rochelle", "Racing 92 vs Stade Français"],
-  "Six Nations": ["France vs Angleterre", "Irlande vs Pays de Galles"]
 };
+
+const SPORTS = ["Football", "Basketball", "Tennis", "Baseball", "Formule 1", "Rugby"];
 
 export default function Page() {
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', content: 'Bonjour! Je suis Bêt, votre assistant de paris sportifs. Sélectionnez un sport pour commencer.', role: 'assistant' }
+    { id: crypto.randomUUID(), content: 'Bonjour! Je suis Bêt, votre assistant de paris sportifs. Sélectionnez un sport pour commencer.', role: 'assistant' }
   ]);
 
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedChampionship, setSelectedChampionship] = useState<string | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
   const [selectedBetType, setSelectedBetType] = useState<string | null>(null);
-  const [prediction, setPrediction] = useState("");
+  const [chatEnabled, setChatEnabled] = useState(false);
+  const [userInput, setUserInput] = useState("");
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  // 🔄 Scroller automatiquement en bas après chaque mise à jour
   useEffect(() => {
     chatContainerRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔹 Fonction pour ajouter un message au chat
+  useEffect(() => {
+    if (selectedSport && selectedChampionship && selectedMatch && selectedBetType) {
+      setChatEnabled(true);
+    }
+  }, [selectedSport, selectedChampionship, selectedMatch, selectedBetType]);
+
   const addMessage = (content: string, role: "user" | "assistant") => {
-    setMessages((prev) => [...prev, { id: Date.now().toString(), content, role }]);
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), content, role }]);
   };
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
-      <Sidebar onSportSelect={(sport) => {
-        setSelectedSport(sport);
-        setSelectedChampionship(null);
-        setSelectedMatch(null);
-        setSelectedBetType(null);
-        setPrediction("");
-        addMessage(`J'ai sélectionné le sport : ${sport}`, "user");
-        addMessage("Sélectionnez un championnat :", "assistant");
-      }} />
+      {/* Sidebar avec "Football" en bouton et les autres sports en texte simple */}
+      <div className="w-64 bg-purple-700 text-white p-4">
+        <h2 className="text-lg font-bold mb-4">Bêt</h2>
+        <div className="space-y-2">
+          {SPORTS.map((sport) => {
+            const isFootball = sport === "Football";
+
+            return isFootball ? (
+              <button
+                key={sport}
+                className="w-full p-2 rounded-lg text-left bg-purple-600 text-white hover:bg-purple-500"
+                onClick={() => {
+                  setSelectedSport(sport);
+                  setSelectedChampionship(null);
+                  setSelectedMatch(null);
+                  setSelectedBetType(null);
+                  setChatEnabled(false);
+                  addMessage(`J'ai sélectionné le sport : ${sport}`, "user");
+                  addMessage("Sélectionnez un championnat :", "assistant");
+                }}
+              >
+                {sport}
+              </button>
+            ) : (
+              <div key={sport} className="text-gray-400 cursor-default">
+                {sport}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       <main className="flex-1 flex flex-col">
-        {/* Avertissement */}
         <div className="bg-violet-100 p-4 flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-violet-600" />
           <p className="text-sm text-violet-900">
@@ -77,7 +85,6 @@ export default function Page() {
           </p>
         </div>
 
-        {/* 🔹 Zone de discussion */}
         <div className="flex-1 p-4 overflow-y-auto space-y-4">
           {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
@@ -86,9 +93,9 @@ export default function Page() {
           {/* Étape 1 : Sélection du championnat */}
           {selectedSport && !selectedChampionship && (
             <div className="grid grid-cols-2 gap-4">
-              {CHAMPIONSHIPS[selectedSport].map((championship) => (
+              {CHAMPIONSHIPS[selectedSport].map((championship, index) => (
                 <button
-                  key={championship}
+                  key={`${selectedSport}-${championship}-${index}`}
                   className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300"
                   onClick={() => {
                     setSelectedChampionship(championship);
@@ -105,9 +112,9 @@ export default function Page() {
           {/* Étape 2 : Sélection du match */}
           {selectedChampionship && !selectedMatch && (
             <div className="grid grid-cols-2 gap-4">
-              {MATCHES[selectedChampionship]?.map((match) => (
+              {MATCHES[selectedChampionship]?.map((match, index) => (
                 <button
-                  key={match}
+                  key={`${selectedChampionship}-${match}-${index}`}
                   className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300"
                   onClick={() => {
                     setSelectedMatch(match);
@@ -129,14 +136,14 @@ export default function Page() {
                 { name: "Score Exact", icon: <Hash className="w-6 h-6 text-purple-600" /> },
                 { name: "Nombre de Buts", icon: <Goal className="w-6 h-6 text-purple-600" /> },
                 { name: "Vainqueur", icon: <Trophy className="w-6 h-6 text-purple-600" /> },
-              ].map(({ name, icon }) => (
+              ].map(({ name, icon }, index) => (
                 <button
-                  key={name}
+                  key={`${selectedMatch}-${name}-${index}`}
                   className="flex flex-col items-center p-4 rounded-lg bg-purple-100 hover:bg-purple-200"
                   onClick={() => {
                     setSelectedBetType(name);
                     addMessage(`J'ai sélectionné le pari : ${name}`, "user");
-                    addMessage("Entrez votre prédiction :", "assistant");
+                    addMessage("Vous pouvez maintenant discuter avec moi !", "assistant");
                   }}
                 >
                   {icon}
@@ -147,8 +154,40 @@ export default function Page() {
           )}
         </div>
 
-        {/* Scroller en bas pour voir les nouveaux messages */}
         <div ref={chatContainerRef} />
+
+        {/* ✅ Barre de discussion activée uniquement après avoir sélectionné un pari */}
+        {chatEnabled && (
+          <div className="p-4 border-t bg-white flex items-center">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Écrivez un message..."
+              className="flex-1 p-2 border rounded-lg"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (userInput.trim() !== "") {
+                    addMessage(userInput, "user");
+                    setUserInput("");
+                  }
+                }
+              }}
+            />
+            <button
+              onClick={() => {
+                if (userInput.trim() !== "") {
+                  addMessage(userInput, "user");
+                  setUserInput("");
+                }
+              }}
+              className="ml-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            >
+              Envoyer
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
