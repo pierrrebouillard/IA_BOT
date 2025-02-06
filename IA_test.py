@@ -8,7 +8,7 @@ os.environ["CHROMA_DISABLE_TELEMETRY"] = "true"
 os.environ["CHROMA_TELEMETRY_ENABLED"] = "false"
 
 # Récupération de la clé API OpenAI (remplacez-la par votre clé ou utilisez une variable d'environnement)
-api_key = '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'
+api_key = ''
 if not api_key:
     raise ValueError("Aucune clé API détectée !")
 openai.api_key = api_key
