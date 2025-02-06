@@ -6,7 +6,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { SparklesIcon, StarIcon, EyeIcon, PaintBrushIcon, ClockIcon, HandThumbUpIcon } from '@heroicons/react/24/outline'
 
 const navigation = [
-  { name: 'Chatbot', href: '#' },
+  { name: 'Chatbot', href: '/chatbot' },
   { name: 'Notre produit', href: '#section' },
   { name: 'Tuto', href: '#tuto' },
  
