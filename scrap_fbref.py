@@ -79,15 +79,17 @@ def initialize_db():
             SeasonnpxGPlusxA REAL
         )
         ''')
+    #delete the table Users
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT,
+            token TEXT
+        )
+    ''')
     conn.commit()
     conn.close()
-
-
-def get_next_matches(url, league_name):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    match_results_table = soup.find('table', {'class': 'stats_table'})
-
 
 def scrape_and_store_playerstat(url, league):
     try:
@@ -99,12 +101,8 @@ def scrape_and_store_playerstat(url, league):
 
     try:
         soup = BeautifulSoup(response.text, 'html.parser')
-        #print seulement les tableau
-        print(soup.find_all('table'))
-        match_table = soup.find('table', {'class': 'eq2'})
-
-        tables = soup.find_all('table')
-        match_table = tables[2]
+        #trouve le tableau avec la class css class="min_width sortable stats_table shade_zero now_sortable sticky_table eq2 re2 le2"
+        match_table = soup.find('table', {'id': 'stats_standard'})
         if match_table is None:
             print("No matching table found on the page.")
             return
@@ -115,7 +113,9 @@ def scrape_and_store_playerstat(url, league):
     try:
         print("Match table found: Processing data...")
         html_io = StringIO(str(match_table))
+        print(html_io)
         df = pd.read_html(html_io)[0]
+        print(df)
     except Exception as e:
         print(f"Failed to parse data: {e}")
         return
@@ -155,7 +155,6 @@ def scrape_and_store_playerstat(url, league):
     conn.close()
 
 
-
 def scrape_and_store_data(url, league_name):
     try:
         response = requests.get(url)
@@ -187,6 +186,9 @@ def scrape_and_store_data(url, league_name):
             # Process last five matches to calculate the current form win percentage
             last_five = row['5 derniers']
             victory_percentage = ((last_five.count('V') + (last_five.count('N') * 0.5)) / len(last_five.replace(" ", ""))) * 100 if last_five else 0
+            # Add 1 or 0 if the team is in win streak of 3 in the last 5 matches
+            if row['5 derniers'].count('V') >= 4:
+                victory_percentage += 8
 
             # Upsert data into the table
             cursor.execute(f'''
@@ -251,7 +253,7 @@ def main():
     leagues_info = {
         'Premier_League': 'https://fbref.com/fr/comps/9/Statistiques-Premier-League',
         'La_Liga': 'https://fbref.com/fr/comps/12/Statistiques-LaLiga',
-        'Serie_A': 'https://fbref.com/fr/comps/11/Statistiques-Serie-A',
+        'Serie_A': 'https://fbref.com/fr/comps/11/calendrier/Scores-et-tableaux-Serie-A',
         'Bundesliga': 'https://fbref.com/fr/comps/20/Statistiques-Bundesliga',
         'Ligue_1': 'https://fbref.com/fr/comps/13/Statistiques-Ligue-1',
     }
@@ -267,7 +269,7 @@ def main():
     league_player_stats = {
         'Premier_League_players':'https://fbref.com/fr/comps/9/stats/Statistiques-Premier-League',
         'La_Liga_players':'https://fbref.com/fr/comps/stats/Statistiques-La-Liga',
-        'Serie_A_players':'https://fbref.com/fr/comps/stats/Statistiques-Serie-A',
+        'Serie_A_players':'https://fbref.com/fr/comps/11/calendrier/Scores-et-tableaux-Serie-A',
         'Bundesliga_players':'https://fbref.com/fr/comps/20/stats/Statistiques-Bundesliga',
         'Ligue_1_players':'https://fbref.com/fr/comps/13/stats/Statistiques-Ligue-1',
     }
