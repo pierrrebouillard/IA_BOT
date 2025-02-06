@@ -4,6 +4,12 @@ import pandas as pd
 import sqlite3
 from io import StringIO
 import os
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 def initialize_db():
@@ -91,7 +97,85 @@ def initialize_db():
     conn.commit()
     conn.close()
 
+def flatten_columns(df):
+    """ Appliquer les noms de colonnes selon le nombre détecté dans le DataFrame. """
+    column_names = [
+        'Rank', 'Player', 'Nation', 'Position', 'Team', 'Age', 'BirthYear', 'Matches', 'Starts',
+        'Minutes', 'Completed90s', 'Goals', 'Assists', 'GoalsPlusAssists', 'GoalsNonPenalty',
+        'PenaltiesMade', 'PenaltiesAttempted', 'YellowCards', 'RedCards', 'ExpectedGoals',
+        'NonPenaltyExpectedGoals', 'ExpectedAssist', 'NonPenaltyxGPlusxA', 'ProgressiveCarries',
+        'ProgressivePasses', 'ProgressiveRuns', 'SeasonGoals', 'SeasonAssists',
+        'SeasonGoalsPlusAssists', 'SeasonGoalsNonPenalty', 'SeasonGoalsPlusAssistsNonPenalty',
+        'SeasonxG', 'SeasonxA', 'SeasonxGPlusxA', 'SeasonnpxG', 'SeasonnpxGPlusxA',
+    ]
+    # Ajuster le nombre de noms de colonnes en fonction du nombre réel de colonnes dans le DataFrame
+    adjusted_column_names = column_names[:len(df.columns)]  # Utiliser seulement autant de noms qu'il y a de colonnes
+    df.columns = adjusted_column_names
+    return df
+
 def scrape_and_store_playerstat(url, league):
+    """ Scrape les données du tableau et les stocke dans SQLite. """
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service)
+    driver.get(url)
+
+    try:
+        match_table = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.ID, 'stats_standard'))
+        )
+        print("Match table found: Processing data...")
+        html_content = match_table.get_attribute('outerHTML')
+        df = pd.read_html(StringIO(html_content))[0]
+        #delete the last column
+        df = df.iloc[:, :-1]
+        df = flatten_columns(df)  # Renommer les colonnes dynamiquement
+        print("Data processed successfully. Columns adjusted to match data.")
+    except Exception as e:
+        print(f"Failed to locate or process data: {e}")
+        driver.quit()
+        return
+
+    driver.quit()
+
+    conn = sqlite3.connect('football_stats.db')
+    df.to_sql(f'{league}_PlayerStats', conn, if_exists='append', index=False)
+    conn.close()
+    print("Data stored successfully.")
+
+
+    """ Scrape les données du tableau et les stocke dans SQLite. """
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service)
+    driver.get(url)
+
+    try:
+        match_table = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.ID, 'stats_standard'))
+        )
+        print("Match table found: Processing data...")
+        html_content = match_table.get_attribute('outerHTML')
+        df = pd.read_html(StringIO(html_content))[0]
+        print(df)
+        df = flatten_columns(df)  # Renommer les colonnes dynamiquement
+        print("Data processed successfully. Columns adjusted to match data.")
+    except Exception as e:
+        print(f"Failed to locate or process data: {e}")
+        driver.quit()
+        return
+
+    driver.quit()
+
+    conn = sqlite3.connect('football_stats.db')
+    try:
+        df.to_sql(f'{league}_PlayerStats', conn, if_exists='append', index=False)
+        conn.close()
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return
+    except Exception as e:
+        print(f"Data storage failed: {e}")
+        return
+    print("Data stored successfully.")
     try:
         response = requests.get(url)
     except requests.RequestException as e:
@@ -268,20 +352,20 @@ def main():
 
     league_player_stats = {
         'Premier_League_players':'https://fbref.com/fr/comps/9/stats/Statistiques-Premier-League',
-        'La_Liga_players':'https://fbref.com/fr/comps/stats/Statistiques-La-Liga',
-        'Serie_A_players':'https://fbref.com/fr/comps/11/calendrier/Scores-et-tableaux-Serie-A',
+        'La_Liga_players':'https://fbref.com/fr/comps/12/stats/Statistiques-La-Liga',
+        'Serie_A_players':'https://fbref.com/fr/comps/11/stats/Statistiques-Serie-A',
         'Bundesliga_players':'https://fbref.com/fr/comps/20/stats/Statistiques-Bundesliga',
         'Ligue_1_players':'https://fbref.com/fr/comps/13/stats/Statistiques-Ligue-1',
     }
 
-    for league, url in leagues_info.items():
-        scrape_and_store_data(url, league)
+    # for league, url in leagues_info.items():
+    #     scrape_and_store_data(url, league)
 
-    for league, url in leagues_matches.items():
-        scrape_and_store_upcoming_matches(url, league)
+    # for league, url in leagues_matches.items():
+    #     scrape_and_store_upcoming_matches(url, league)
 
-    #for league, url in league_player_stats.items():
-    #    scrape_and_store_playerstat(url, league)
+    for league, url in league_player_stats.items():
+        scrape_and_store_playerstat(url, league)
 
 if __name__ == "__main__":
     main()
