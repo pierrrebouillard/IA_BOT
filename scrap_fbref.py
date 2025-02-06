@@ -272,14 +272,14 @@ def main():
         'Ligue_1_players':'https://fbref.com/fr/comps/13/stats/Statistiques-Ligue-1',
     }
 
-    # for league, url in leagues_info.items():
-    #     scrape_and_store_data(url, league)
+    for league, url in leagues_info.items():
+        scrape_and_store_data(url, league)
 
-    # for league, url in leagues_matches.items():
-    #     scrape_and_store_upcoming_matches(url, league)
+    for league, url in leagues_matches.items():
+        scrape_and_store_upcoming_matches(url, league)
 
-    for league, url in league_player_stats.items():
-        scrape_and_store_playerstat(url, league)
+    #for league, url in league_player_stats.items():
+    #    scrape_and_store_playerstat(url, league)
 
 if __name__ == "__main__":
     main()
