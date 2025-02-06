@@ -16,6 +16,35 @@ const navigation = [
 
 export default function Register() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // #send to backend api {"username": "Prod_test", "password": "Test"} http://127.0.0.1:5000/register
+    fetch("http://127.0.0.1:5000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: formData.email,
+        password: formData.password,
+      }),
+    });
+    // check the response and redirect to the right page
+  }
+
     return(
    <div className="bg-violet">
          <header className="absolute inset-x-0 top-0 z-50">
@@ -114,7 +143,7 @@ export default function Register() {
               </div>
               {/* Body du Modal */}
               <div className="p-4 md:p-5">
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleSubmit}>
                   <div>
                     <label
                       htmlFor="email"
@@ -127,6 +156,7 @@ export default function Register() {
                       id="email"
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-claire focus:border-claire block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
                       placeholder="nom@adresse.com"
+                      onChange={handleChange}
                       required
                     />
                   </div>
@@ -139,10 +169,11 @@ export default function Register() {
                     </label>
                     <input
                       type="Mot de passe"
-                      id="Mot de passe"
+                      id="password"
                       placeholder="••••••••"
                       className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
                       required
+                      onChange={handleChange}
                     />
                   </div>
                   <div className="flex justify-between">

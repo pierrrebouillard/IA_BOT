@@ -41,6 +41,18 @@ export default function Register() {
       alert("Vous devez accepter les conditions !");
       return;
     }
+    // #send to backend api {"username": "Prod_test", "password": "Test"} http://127.0.0.1:5000/register
+    fetch("http://127.0.0.1:5000/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: formData.email,
+        password: formData.password,
+      }),
+    });
+
   
     console.log("Données soumises :", formData);
     alert("Inscription réussie !");
