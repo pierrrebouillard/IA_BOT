@@ -1,4 +1,4 @@
-try:
+try: 
     from utils.database import get_db_connection  # Cas normal avec Streamlit et imports classiques
 except ModuleNotFoundError:
     import sys
@@ -75,11 +75,27 @@ def create_vector_store():
             for row in rows:
                 # Association des colonnes aux valeurs sous forme de dictionnaire
                 row_data = {col_name: value for col_name, value in zip(column_names, row)}
-                # Création d'une représentation multi-lignes
-                text_lines = [f"Table: {table}", "-" * (len(table) + 7)]
-                for col in column_names:
-                    text_lines.append(f"{col}: {row_data[col]}")
-                text_data = "\n".join(text_lines)
+                
+                # Construction spécifique pour la table Match_Probabilities
+                if table == "Match_Probabilities":
+                    text_lines = [f"Table: {table}", "-" * (len(table) + 7)]
+                    text_lines.append(f"Ligue: {row_data['league']}")
+                    text_lines.append(f"Équipe 1: {row_data['team1']}")
+                    text_lines.append(f"Équipe 2: {row_data['team2']}")
+                    text_lines.append(f"Date: {row_data['date']}")
+                    text_lines.append(f"Probabilité victoire {row_data['team1']}: {row_data['prob_win_team1']}")
+                    text_lines.append(f"Probabilité victoire {row_data['team2']}: {row_data['prob_win_team2']}")
+                    text_lines.append(f"Probabilité match nul: {row_data['prob_draw']}")
+                    text_lines.append(f"Score prédit {row_data['team1']}: {row_data['predicted_score_team1']}")
+                    text_lines.append(f"Score prédit {row_data['team2']}: {row_data['predicted_score_team2']}")
+                    text_lines.append(f"Meilleurs buteurs: {row_data['top_scorers']}")
+                    text_data = "\n".join(text_lines)
+                else:
+                    # Construction générique pour les autres tables
+                    text_lines = [f"Table: {table}", "-" * (len(table) + 7)]
+                    for col in column_names:
+                        text_lines.append(f"{col}: {row_data[col]}")
+                    text_data = "\n".join(text_lines)
                 
                 # Enrichissement avec des métadonnées pour conserver la structure
                 metadata = {
@@ -110,3 +126,4 @@ def load_vector_store():
 
 if __name__ == "__main__":
     create_vector_store()
+

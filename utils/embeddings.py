@@ -5,7 +5,7 @@ from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
 
 # 🔑 Récupération sécurisée de la clé API OpenAI
-api_key = ''
+api_key = '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'
 if not api_key:
     raise ValueError("❌ Aucune clé API détectée. Vérifie que tu as bien défini `OPENAI_API_KEY`.")
 
