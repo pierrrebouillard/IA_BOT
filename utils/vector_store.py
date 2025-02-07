@@ -3,7 +3,6 @@ try:
 except ModuleNotFoundError:
     import sys
     import os
-
     sys.path.append(os.path.abspath(os.path.dirname(__file__)))  # Ajoute utils au chemin Python
     from database import get_db_connection  # Cas d'exécution directe (ex: `python vector_store.py`)
 
@@ -16,46 +15,47 @@ from langchain.schema import Document
 print("✅ utils.vector_store importé avec succès !")
 
 # 🔑 Récupération sécurisée de la clé API OpenAI
-# Remplace cette clé en dur par une variable d'environnement si nécessaire.
-api_key = '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'
+# Pour la production, remplacez cette clé en dur par une variable d'environnement.
+api_key = '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'
 if not api_key:
     raise ValueError("❌ Aucune clé API détectée. Vérifie que `OPENAI_API_KEY` est bien défini.")
 
-# ✅ Modèle d'embedding LangChain (OpenAI)
+# ✅ Initialisation du modèle d'embedding (OpenAI via LangChain)
 embeddings_model = OpenAIEmbeddings(openai_api_key=api_key)
 
-# 📂 Chemin du VectorStore Chroma
+# 📂 Chemin de persistance du vector store Chroma
 CHROMA_DB_PATH = "chroma_db"
 
 def create_vector_store():
     """
-    Génère une base vectorielle ChromaDB à partir des tables SQLite.
+    Génère une base vectorielle ChromaDB à partir des tables SQLite,
+    en créant pour chaque ligne une représentation textuelle structurée et en y associant des métadonnées.
     """
     print("🚀 Début de la création du vector store...")
 
-    # ✅ Connexion SQLite
+    # Connexion à la base SQLite
     with get_db_connection() as conn:
         cursor = conn.cursor()
 
-        # 🔥 Récupération des noms de tables
+        # Récupération des noms de toutes les tables de la base
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
         tables = [row[0] for row in cursor.fetchall()]
         print(f"📌 Tables détectées : {tables}")
 
-        # 📌 Liste pour stocker les documents vectorisés
+        # Liste pour stocker les documents à vectoriser
         documents = []
 
-        # ✅ Initialisation de ChromaDB
+        # Initialisation du vector store Chroma
         vector_store = Chroma(embedding_function=embeddings_model, persist_directory=CHROMA_DB_PATH)
 
-        # 🔥 Extraction des données de chaque table avec contexte des colonnes
+        # Pour chaque table, extraire les données et créer des documents
         for table in tables:
             print(f"📡 Traitement de la table : {table}")
 
-            # ✅ Récupération des noms de colonnes
+            # Récupération des informations des colonnes avec PRAGMA
             cursor.execute(f"PRAGMA table_info({table})")
             columns_info = cursor.fetchall()
-            column_names = [col[1] for col in columns_info]  # Récupérer seulement les noms des colonnes
+            column_names = [col[1] for col in columns_info]  # On récupère uniquement les noms des colonnes
 
             if not column_names:
                 print(f"⚠️ Impossible de récupérer les colonnes de `{table}`. Skipping...")
@@ -63,7 +63,7 @@ def create_vector_store():
 
             print(f"📊 Colonnes détectées pour `{table}`: {column_names}")
 
-            # ✅ Récupération des données de la table
+            # Récupération de toutes les lignes de la table
             cursor.execute(f"SELECT * FROM {table}")
             rows = cursor.fetchall()
 
@@ -71,17 +71,29 @@ def create_vector_store():
                 print(f"⚠️ La table `{table}` est vide. Aucun embedding généré.")
                 continue
 
-            # 🔹 Conversion des données en texte structuré avec noms de colonnes
+            # Pour chaque ligne, construire une représentation textuelle structurée
             for row in rows:
+                # Association des colonnes aux valeurs sous forme de dictionnaire
                 row_data = {col_name: value for col_name, value in zip(column_names, row)}
-                text_data = " | ".join([f"{col}: {val}" for col, val in row_data.items()])
-
-                # ✅ Création du document avec contexte enrichi
-                doc = Document(page_content=text_data, metadata={"table": table})
+                # Création d'une représentation multi-lignes
+                text_lines = [f"Table: {table}", "-" * (len(table) + 7)]
+                for col in column_names:
+                    text_lines.append(f"{col}: {row_data[col]}")
+                text_data = "\n".join(text_lines)
+                
+                # Enrichissement avec des métadonnées pour conserver la structure
+                metadata = {
+                    "table": table,
+                    "columns": column_names,
+                    "raw_row": row_data
+                }
+                
+                # Création du document avec le texte et les métadonnées
+                doc = Document(page_content=text_data, metadata=metadata)
                 documents.append(doc)
                 print(f"📝 Ajout du document : {doc}")
 
-        # ✅ Ajout des documents à ChromaDB
+        # Ajout des documents (embeddings) dans le vector store Chroma
         if documents:
             print("🔍 Ajout des embeddings enrichis dans ChromaDB...")
             vector_store.add_documents(documents)

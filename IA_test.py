@@ -1,56 +1,94 @@
 import os
 import openai
 from openai import OpenAIError
-from utils.vector_store import create_vector_store, load_vector_store
+from utils.vector_store import load_vector_store  # Assurez-vous que ce module est accessible
+import logging
 
-# Désactivation de la télémétrie de Chroma (facultatif)
-os.environ["CHROMA_DISABLE_TELEMETRY"] = "true"
-os.environ["CHROMA_TELEMETRY_ENABLED"] = "false"
+# Configuration du logger pour afficher les messages dans la console
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger(__name__)
 
-# Récupération de la clé API OpenAI (remplacez-la par votre clé ou utilisez une variable d'environnement)
-api_key = ''
+# 🔑 Récupération de la clé API OpenAI
+# Remplacez par votre clé ou assurez-vous qu'elle est définie dans vos variables d'environnement
+api_key = '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'
 if not api_key:
-    raise ValueError("Aucune clé API détectée !")
+    raise ValueError("❌ Aucune clé API détectée !")
 openai.api_key = api_key
 
-def main():
-    # Vérifier l'existence du dossier de la base vectorielle
-    if not os.path.exists("chroma_db"):
-        print("Le dossier 'chroma_db' n'existe pas. Création de la base vectorielle...")
-        create_vector_store()
-        print("Base vectorielle créée.")
+# Chemin du vector store (doit être identique à celui utilisé lors de la création)
+CHROMA_DB_PATH = "chroma_db"
+
+def determine_filter(query: str):
+    """
+    Détermine, à partir de la requête utilisateur, un filtre à appliquer sur la recherche des documents.
+    Par exemple, si la requête contient "date" et "prochain" (ou "suiv"), on suppose que les informations
+    sur les prochains matchs se trouvent dans la table "match_schedule". Si la requête contient "score",
+    on suppose que les scores se trouvent dans la table "match_scores".
+    """
+    query_lower = query.lower()
+    if "date" in query_lower and ("prochain" in query_lower or "suiv" in query_lower):
+        print("DEBUG: Filtrage sur la table 'match_schedule'")
+        return {"table": "match_schedule"}
+    elif "score" in query_lower:
+        print("DEBUG: Filtrage sur la table 'match_scores'")
+        return {"table": "match_scores"}
     else:
-        print("Le dossier 'chroma_db' existe déjà.")
-    
-    # Charger le vector store
+        return None
+
+def main():
+    # Chargement du vector store existant
     print("Chargement du vector store...")
-    vector_store = load_vector_store()
-    print("Vector store chargé :", vector_store)
-    
-    print("\n=== Test du chatbot ===")
-    print("Entrez 'exit' pour quitter.\n")
-    
+    try:
+        vector_store = load_vector_store()
+        print("✅ Vector store chargé.")
+    except Exception as e:
+        print("Erreur lors du chargement du vector store:", e)
+        logger.exception("Erreur lors du chargement du vector store")
+        return
+
+    print("\n=== Chatbot interactif ===")
+    print("Tapez 'exit' ou 'quit' pour quitter.\n")
+
     while True:
-        # Saisie de l'utilisateur dans le terminal
-        user_input = input("📝 Tape ton pari ici : ")
-        if user_input.lower() in ['exit', 'quit']:
+        # Saisie de l'utilisateur
+        user_input = input("📝 Tapez votre question: ")
+        if user_input.lower() in ["exit", "quit"]:
             print("Arrêt du chatbot.")
             break
-        
+
+        # Détermine un éventuel filtre basé sur la requête
+        metadata_filter = determine_filter(user_input)
+
         try:
-            # Recherche de similarités dans le vector store pour enrichir le contexte
-            search_results = vector_store.similarity_search(user_input, k=3)
+            # Recherche par similarité dans le vector store avec éventuellement un filtre sur les métadonnées
+            if metadata_filter:
+                print("DEBUG: Utilisation du filtre:", metadata_filter)
+                search_results = vector_store.similarity_search(user_input, k=3, filter=metadata_filter)
+            else:
+                search_results = vector_store.similarity_search(user_input, k=3)
+            
+            # Concatène le contenu textuel des documents trouvés
             context = "\n".join([doc.page_content for doc in search_results])
-            print("\nContexte récupéré :")
+            print("DEBUG: Contexte récupéré :")
             print(context)
             
             # Préparation du prompt pour OpenAI
             messages = [
-                {"role": "system", "content": "Tu es un expert en paris sportifs. Analyse les risques du pari."},
-                {"role": "user", "content": f"Voici les données pertinentes trouvées :\n{context}\n\nPari : {user_input}"}
+                {
+                    "role": "system",
+                    "content": (
+                        "Tu es un expert en paris sportifs. "
+                        "Réponds uniquement en te basant sur les données fournies ci-dessous, sans utiliser d'informations externes. "
+                        "Si les données sont insuffisantes, indique-le clairement."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": f"Voici les données pertinentes trouvées :\n{context}\n\nRequête : {user_input}"
+                }
             ]
             
-            # Appel à l'API OpenAI via ChatCompletion
+            # Appel à l'API OpenAI via ChatCompletion 
             response = openai.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=messages
@@ -66,3 +104,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
