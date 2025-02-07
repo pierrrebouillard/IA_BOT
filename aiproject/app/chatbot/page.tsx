@@ -22,6 +22,7 @@ export default function Home() {
   const [inputMessage, setInputMessage] = useState("")
   
   const chatContainerRef = useRef(null);
+  
 
   const sendMessage = () => {
     if (inputMessage.trim() === "" || inputMessage.length > 250) return;
@@ -36,7 +37,13 @@ export default function Home() {
     }
   }, [messages]);
 
- 
+  useEffect(() => {
+    console.log("Fetching matches...");
+    Object.keys(leagues).forEach(league => {
+      fetchLeagues(league);
+    });
+  }, []);
+  
 
   const selectLeague = (league) => {
     setSelectedLeague(league);
@@ -76,69 +83,57 @@ export default function Home() {
     { name: "Formule 1", clickable: false }
   ];
 
-  const leagues = {
-    "Premier League": [
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-    ],
-    "La Liga": [
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-    ],
-    "Serie A": [
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-    ],
-    "Bundesliga": [
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-    ],
-    "Ligue 1": [
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-      { teams: "Manchester City vs Arsenal", date: "12/02/2024", time: "20:00" },
-      { teams: "Liverpool vs Chelsea", date: "13/02/2024", time: "18:30" },
-      { teams: "Tottenham vs Man United", date: "14/02/2024", time: "19:45" },
-      { teams: "West Ham vs Newcastle", date: "15/02/2024", time: "21:00" },
-      { teams: "Leicester vs Everton", date: "16/02/2024", time: "17:00" },
-      
-    ],
-  };
+  const [leagues, setLeagues] = useState({
+    "Premier League": [],
+    "La Liga": [],
+    "Serie A": [],
+    "Bundesliga": [],
+    "Ligue 1": []
+  });
+  
+  useEffect(() => {
+    console.log("Fetching matches...");
+    const leagueNames = ["Premier League", "La Liga", "Serie A", "Bundesliga", "Ligue 1"];
+    leagueNames.forEach(league => {
+      fetchLeagues(league);
+    });
+  }, []);
+  
+
+  useEffect(() => {
+    console.log("Leagues updated:", leagues);
+  }, [leagues]);
+  
+
+  function fetchLeagues(league) {
+    console.log('Fetching matches for:', league);
+  
+    axios.post('http://127.0.0.1:5001/upcoming_matches', {
+      league: league.replace(/\s+/g, "_") // Transforme "Premier League" en "Premier_League"
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }).then((response) => {
+      console.log('Response:', response.data); // Vérifie ce que l'API renvoie
+  
+      if (response.data && Array.isArray(response.data)) {
+        setLeagues(prevLeagues => ({
+          ...prevLeagues,
+          [league]: response.data.map(match => ({
+            teams: `${match.home_team} vs ${match.away_team}`,
+            date: match.date,
+            time: "Heure inconnue" // Si `time` est inexistant, tu peux changer cela selon ton API
+          }))
+        }));
+      } else {
+        console.error('Invalid response format:', response.data);
+      }
+    }).catch((error) => {
+      console.error('Error fetching leagues:', error);
+    });
+  }
+  
 
   const betTypes = [
     { name: "Résultat du match", icon: <TrophyIcon className="w-5 h-5" /> },
@@ -165,25 +160,34 @@ export default function Home() {
   }, []);
 
   function fetchLeagues(league) {
-    console.log('Fetching leagues for:', league);
-    axios.post('http://127.0.0.1:5000/upcoming_matches', {
-      league: league
+    console.log('Fetching matches for:', league);
+  
+    axios.post('http://127.0.0.1:5001/upcoming_matches', {
+      league: league.replace(/\s+/g, "_") // Envoie la league sans modification
     }, {
       headers: {
         'Content-Type': 'application/json',
       }
     }).then((response) => {
-      // Mise à jour de l'état avec les matchs récupérés
-      setLeagues(prevLeagues => ({
-        ...prevLeagues,
-        [league]: response.data.matches // Assurez-vous que `matches` est la clé correcte
-      }));
-    }).catch((error) => {
-      console.error('Error fetching leagues:', error);
-    });
+      console.log(`Response for ${league}:`, response.data); // Vérifie ce que l'API renvoie
   
-
+      if (response.data && Array.isArray(response.data)) {
+        setLeagues(prevLeagues => ({
+          ...prevLeagues,
+          [league]: response.data.map(match => ({
+            teams: `${match.home_team} vs ${match.away_team}`, // Format propre
+            date: match.date || "Date inconnue", // Gère les valeurs manquantes
+            time: match.time || "Heure inconnue" // Gère les valeurs manquantes
+          }))
+        }));
+      } else {
+        console.error('Invalid response format for:', league, response.data);
+      }
+    }).catch((error) => {
+      console.error('Error fetching matches for:', league, error);
+    });
   }
+  
 
 
   return (
@@ -330,12 +334,17 @@ export default function Home() {
             <div className="chat-container bg-gradient-to-br from-[#2B3257] to-[#344267] p-6 rounded-xl border border-[#4F5D84] shadow-lg shadow-[#1a2238] w-full h-80 overflow-y-auto">
               <h3 className="text-lg font-semibold mb-4 text-center ">Prochains matchs</h3>
               <div className="flex flex-col gap-4">
-                {selectedLeague && leagues[selectedLeague]?.slice(0, 10).map((match, index) => (
+              {selectedLeague && leagues[selectedLeague]?.length > 0 ? (
+                leagues[selectedLeague].map((match, index) => (
                   <div key={index} className="p-4 bg-[#344267] rounded-lg shadow-md cursor-pointer hover:bg-[#3a4b6c] flex flex-col" onClick={() => selectMatch(match)}>
                     <h4 className="text-md font-semibold">{match.teams}</h4>
                     <p className="text-sm opacity-80">{match.date} - {match.time}</p>
                   </div>
-                ))}
+                ))
+              ) : (
+                <p className="text-center text-sm opacity-80">Aucun match disponible</p>
+              )}
+
               </div>
             </div>
             

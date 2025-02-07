@@ -1,15 +1,31 @@
-from flask import Flask, request, jsonify
+<<<<<<< Updated upstream
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
+=======
+>>>>>>> Stashed changes
 import sqlite3
 import openai
 import hashlib
+<<<<<<< Updated upstream
+import re
+import random
+=======
+import os
+import logging
+import re
+from datetime import datetime
+>>>>>>> Stashed changes
 
-openai.api_key = ''
+# Configurez votre clé API OpenAI ici (ou via une variable d'environnement)
+openai.api_key = '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'
+if not openai.api_key:
+    raise ValueError("❌ Aucune clé API détectée !")
 
-app = Flask(__name__)
-CORS(app)
+# Configuration du logger
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger(__name__)
 
-
+<<<<<<< Updated upstream
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -19,7 +35,14 @@ def register():
     hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Simple hashing for demonstration
 
     token = hashlib.sha256(username.encode()).hexdigest()  # Generate a token for the user
+=======
+# Chemin du vector store (s'il est utilisé ailleurs)
+CHROMA_DB_PATH = "chroma_db"
 
+# --------------------- Fonctions de Prédiction ---------------------
+>>>>>>> Stashed changes
+
+def get_match_prediction(league, team1, team2):
     try:
         conn = sqlite3.connect('football_stats.db')
         cursor = conn.cursor()
@@ -46,6 +69,7 @@ def register():
     finally:
         conn.close()
 
+<<<<<<< Updated upstream
     return jsonify({"message": "User registered successfully"}), 201
 
 @app.route('/login', methods=['POST'])
@@ -53,6 +77,8 @@ def login():
     data = request.get_json()
     username = data['username']
     password = data['password']
+    print(username)
+    print(password)
 
     hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Simple hashing for demonstration
 
@@ -62,6 +88,7 @@ def login():
     stored_password = cursor.fetchone()
 
     if stored_password and stored_password[0] == hashed_password:
+        #return token and redirect to /chatbot
         return jsonify({"message": "Login successful", "token": stored_password[1]}), 200
     else:
         return jsonify({"error": "Invalid username or password"}), 401
@@ -69,55 +96,72 @@ def login():
 def generate_textual_response(description, data, probability):
     prompt = f"{description} Here are the details: {data}. How would you summarize this for a sports betting enthusiast? and the probability of this happening is {probability}"
 
+=======
+def get_score_prediction(league, team1, team2):
+>>>>>>> Stashed changes
     try:
-        response = openai.ChatCompletion.create(
-          model="gpt-3.5-turbo",
-          messages=[
-              {"role": "system", "content": "You are a knowledgeable assistant for sports betting. awnsert in french, be original and concise. awnser like a chatbot. Make the prediction like is our prediction"},
-              {"role": "user", "content": prompt}
-          ]
-        )
-        return response['choices'][0]['message']['content'].strip()
-    except Exception as e:
-        return f"Failed to generate response: {str(e)}"
+        conn = sqlite3.connect('football_stats.db')
+        cursor = conn.cursor()
+        cursor.execute(f'SELECT * FROM {league} WHERE Team = ?', (team1,))
+        team1_stats = cursor.fetchone()
+        cursor.execute(f'SELECT * FROM {league} WHERE Team = ?', (team2,))
+        team2_stats = cursor.fetchone()
+        if not team1_stats or not team2_stats:
+            return {"error": "Team data not found"}
+        team1_goals = (team1_stats[5] / team1_stats[1])
+        team2_goals = (team2_stats[5] / team2_stats[1])
+        team1_concede = (team1_stats[6] / team1_stats[1])
+        team2_concede = (team2_stats[6] / team2_stats[1])
+        predicted_score_team1 = ((team1_goals + team2_concede) / 2) + 0.3
+        predicted_score_team2 = ((team2_goals + team1_concede) / 2) - 0.3
+        json_result = {
+            "predicted_score": {
+                "team1": round(predicted_score_team1),
+                "team2": round(predicted_score_team2)
+            }
+        }
+        return json_result
+    finally:
+        conn.close()
 
+def get_upcoming_matches(league):
+    """
+    Récupère les matchs à venir pour une ligue donnée à partir de la table <league>_matches_Upcoming.
+    On suppose que la table contient au moins :
+      - La date du match (index 3)
+      - L'équipe à domicile (index 4)
+      - L'équipe à l'extérieur (index 5)
+      - Le lieu du match (index 6)
+    """
+    try:
+        conn = sqlite3.connect('football_stats.db')
+        cursor = conn.cursor()
+        query = f'SELECT * FROM {league}_matches_Upcoming'
+        print(query)
+        cursor.execute(query)
+        matches = cursor.fetchall()
+        match_list = []
+        for match in matches:
+            raw_date = match[3]
+            try:
+                if "T" in raw_date:
+                    date_obj = datetime.fromisoformat(raw_date)
+                else:
+                    date_obj = datetime.strptime(raw_date, "%Y-%m-%d %H:%M:%S")
+                date_formatted = date_obj.strftime("%d/%m/%Y %H:%M")
+            except Exception:
+                date_formatted = raw_date
+            match_list.append({
+                "home_team": match[4],
+                "away_team": match[5],
+                "date": date_formatted,
+                "location": match[6]
+            })
+        return match_list[:10]
+    finally:
+        conn.close()
 
-@app.route('/')
-def home():
-    return "Welcome to the Football Match Predictor!"
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    data = request.get_json()
-    league = data.get('league')
-    team1 = data.get('team1')
-    team2 = data.get('team2')
-    bet = data.get('bet', "draw")  # Default to 0 if bet is not provided
-    if not league or not team1 or not team2:
-        return jsonify({"error": "Missing data for league, team1, or team2"}), 400
-
-    prediction = get_match_prediction(league, team1, team2)
-    probability = calculate_bet_probability_winner(prediction, bet)
-    response_text = generate_textual_response(f"The match prediction between {team1} and {team2} in {league} is:", prediction, probability)
-    return jsonify({"prediction": prediction, "ai_response": response_text, "bet_probability": probability})
-
-@app.route('/predict_score', methods=['POST'])
-def predict_score():
-    data = request.get_json()
-    league = data.get('league')
-    team1 = data.get('team1')
-    team2 = data.get('team2')
-    bet = data.get('bet', 0)
-
-
-    prediction = get_score_prediction(league, team1, team2)
-    probability = calculate_bet_probability_score(prediction, bet)
-    response_text = generate_textual_response(f"The match prediction between {team1} and {team2} in {league} is:", prediction, probability)
-    return jsonify({
-        "predicted_score": prediction,
-        "bet_probability": probability,
-        "ai_response": response_text
-    })
+# --------------------- Fonctions de Probabilité ---------------------
 
 def get_teams_and_leagues():
     conn = sqlite3.connect('football_stats.db')
@@ -222,6 +266,55 @@ def calculate_bet_probability_goals(prediction, bet):
         probability = 0.001
     return probability
 
+# --------------------- Génération de la Réponse Textuelle ---------------------
+
+def get_top_scorers(league, team1, team2):
+    conn = sqlite3.connect('football_stats.db')
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f'''
+        SELECT Player, Goals, Team FROM {league}_players_PlayerStats
+        WHERE Goals != 'Buts' AND Goals GLOB '*[0-9]*'
+        AND Team IN (?, ?)
+        ORDER BY Goals DESC
+        LIMIT 6
+        ''', (team1, team2))
+        top_scorers = cursor.fetchall()
+        print(top_scorers)
+    finally:
+        conn.close()
+    return top_scorers
+
+@app.route('/recommend_scorers', methods=['POST', 'GET'])
+def recommend_scorers():
+    league = request.args.get('league')
+    team1 = request.args.get('team1')
+    team2 = request.args.get('team2')
+    
+    if not league or not team1 or not team2:
+        return jsonify({'error': 'Missing required parameters'}), 400
+    
+    try:
+        top_scorers = get_top_scorers(league, team1, team2)
+        recommended_scorers = random.sample(top_scorers, 3)
+        scorers_info = [{'player': scorer[0], 'goals': scorer[1]} for scorer in recommended_scorers]
+        
+        message = f"For the match {team1} vs {team2} in the {league}, the players to watch for scoring are: "
+        players = ', '.join([f"{scorer['player']} ({scorer['goals']} goals)" for scorer in scorers_info])
+        full_message = message + players + ". Good luck with your bets!"
+
+        full_message = generate_textual_response(full_message, '', "50%")
+        
+        return jsonify({'message': full_message, 'scorers': scorers_info})
+    except ValueError:  # Si moins de 3 joueurs sont disponibles pour la sélection
+        return jsonify({'error': 'Not enough players to select from'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
 
 @app.route('/predict_goal', methods=['POST'])
 def predict_goal():
@@ -243,49 +336,90 @@ def predict_goal():
         "ai_response": response_text
     })
 
-@app.route('/upcoming_matches', methods=['POST'])
+@app.route('/upcoming_matches', methods=['OPTIONS, POST, GET'])
 def upcoming_matches():
+    print(request.method)
+    if request.method == 'OPTIONS':
+        headers = {
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, PATCH, DELETE',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Credentials': 'true'
+        }
+        return Response(status=200, headers=headers)
     data = request.get_json()
-    print(data)
     league = data.get('league')
-    print(league)
     if not league:
         return jsonify({"error": "Missing data for league"}), 400
     return jsonify(get_upcoming_matches(league))
 
 def get_match_prediction(league, team1, team2):
     try:
-        conn = sqlite3.connect('football_stats.db')
-        cursor = conn.cursor()
+        response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a knowledgeable assistant for sports betting. awnsert in french, be original and concise. awnser like a chatbot. Make the prediction like is our prediction"},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return f"Failed to generate response: {str(e)}"
 
-        cursor.execute(f'SELECT * FROM {league} WHERE Team = ?', (team1,))
-        team1_stats = cursor.fetchone()
+# --------------------- Détermination du Type de Requête ---------------------
 
-        cursor.execute(f'SELECT * FROM {league} WHERE Team = ?', (team2,))
-        team2_stats = cursor.fetchone()
+def determine_request_type(query: str):
+    """
+    Analyse la question libre saisie par l'utilisateur pour déterminer le type de prédiction à effectuer.
+    - Si la question contient "date" et ("prochain" ou "suiv"), on considère qu'il s'agit des matchs à venir.
+    - Si la question contient "score", on considère qu'il s'agit d'une prédiction de score.
+    - Si la question contient "prédiction", "vainqueur" ou "gagnant", on considère qu'il s'agit d'une prédiction du vainqueur.
+    - Sinon, par défaut, on considère qu'il s'agit d'une prédiction du vainqueur.
+    """
+    query_lower = query.lower()
+    if "date" in query_lower and ("prochain" in query_lower or "suiv" in query_lower):
+        return "upcoming"
+    elif "score" in query_lower:
+        return "score"
+    elif any(keyword in query_lower for keyword in ["prédiction", "vainqueur", "gagnant"]):
+        return "match"
+    else:
+        return "match"
 
-        if not team1_stats or not team2_stats:
-            return {"error": "Team data not found"}
+# --------------------- Boucle Interactive du Chatbot en Mode Terminal ---------------------
 
-        if team1_stats and team2_stats:
-            # Adjust predictions based on point differences
-            point_diff = abs(team1_stats[8] - team2_stats[8])  # Points column index)
-            home_advantage = 5
+def main():
+    print("=== Chatbot Football Predictor ===")
+    print("Posez votre question en langage naturel. Par exemple :")
+    print(" - 'Quelle est la probabilité que Rennes gagne son prochain match en Ligue1 ?'")
+    print(" - 'Quel score est prévu pour le match Rennes contre Lille ?'")
+    print(" - 'Quelles sont les dates des prochains matchs en Ligue1 ?'")
+    print("Tapez 'exit' ou 'quit' pour arrêter.\n")
 
-            # Adjust based on current form, historical results etc.
-            team1_adjusted = team1_stats[-1] + home_advantage - point_diff / 10
-            team2_adjusted = team2_stats[-1] - point_diff / 10
+    # Valeurs par défaut
+    default_league = "Ligue_1"  # Nom exact de la table dans la DB
+    default_team1 = "Rennes"
+    default_team2 = "Lille"
+    default_bet = "draw"
 
-            if get_score_prediction(league, team1, team2)["predicted_score"]["team1"] == get_score_prediction(league, team1, team2)["predicted_score"]["team2"]:
-                return {"winner": "draw"}
-            print(get_score_prediction(league, team1, team2))
-            if team1_adjusted > team2_adjusted:
-                # return in json prediction winner team1
-                return {"winner": team1}
-            elif team1_adjusted < team2_adjusted:
-                return {"winner": team2}
-            else:
-                return "This match is likely to be a draw."
+    while True:
+        user_query = input("📝 Entrez votre question: ")
+        if user_query.lower() in ['exit', 'quit']:
+            print("Arrêt du chatbot.")
+            break
+
+        # Extraction de la ligue : recherche d'un motif du type "Ligue 1" ou "Ligue1"
+        league_match = re.search(r'(Ligue)\s*(\d+)', user_query, re.IGNORECASE)
+        if league_match:
+            league = league_match.group(1) + "_" + league_match.group(2)
+        else:
+            league = default_league
+
+        # Extraction des équipes : recherche d'un motif "Team1 vs Team2" ou "Team1 contre Team2"
+        team_match = re.search(r'\b([A-Z][a-zA-Z\s]+?)\s+(?:vs\.?|contre)\s+([A-Z][a-zA-Z\s]+?)\b', user_query)
+        if team_match:
+            team1 = team_match.group(1).strip()
+            team2 = team_match.group(2).strip()
         else:
             team1 = default_team1
             team2 = default_team2
