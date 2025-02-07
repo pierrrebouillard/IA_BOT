@@ -340,11 +340,11 @@ export default function Example() {
               <div>
                   <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Legal</h2>
                   <ul className="text-gray-500 dark:text-gray-400 font-medium">
-                  <li className="mb-4"><a href="/mentions-legales" className="hover:underline">Mentions légales</a></li>
-              <li className="mb-4"><a href="/confidentialite" className="hover:underline">Politique de Confidentialité</a></li>
-              <li className="mb-4"><a href="/conditions-utilisation" className="hover:underline">Conditions générales d'utilisation</a></li>
-              <li className="mb-4"><a href="/politique-cookies" className="hover:underline">Politique des cookies</a></li>
-              <li><a href="/securite-utilisation" className="hover:underline">Sécurité et utilisation responsable</a></li>
+                  <li className="mb-4"><a href="mentions_legales" className="hover:underline">Mentions légales</a></li>
+              <li className="mb-4"><a href="politique_de_confidentialite" className="hover:underline">Politique de Confidentialité</a></li>
+              <li className="mb-4"><a href="CGU" className="hover:underline">Conditions générales d'utilisation</a></li>
+              <li className="mb-4"><a href="politique_de_cookies" className="hover:underline">Politique des cookies</a></li>
+              <li><a href="securite_des_donnees" className="hover:underline">Sécurité et utilisation responsable</a></li>
                   </ul>
               </div>
           </div>
