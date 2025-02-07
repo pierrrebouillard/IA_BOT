@@ -350,7 +350,7 @@ def main():
     leagues_info = {
         'Premier_League': 'https://fbref.com/fr/comps/9/Statistiques-Premier-League',
         'La_Liga': 'https://fbref.com/fr/comps/12/Statistiques-LaLiga',
-        'Serie_A': 'https://fbref.com/fr/comps/11/calendrier/Scores-et-tableaux-Serie-A',
+        'Serie_A': 'https://fbref.com/fr/comps/11/Statistiques-Serie-A',
         'Bundesliga': 'https://fbref.com/fr/comps/20/Statistiques-Bundesliga',
         'Ligue_1': 'https://fbref.com/fr/comps/13/Statistiques-Ligue-1',
     }
@@ -358,7 +358,7 @@ def main():
     leagues_matches = {
         'Premier_League_matches':'https://fbref.com/fr/comps/9/calendrier/Scores-et-tableaux-Premier-League',
         'La_Liga_matches':'https://fbref.com/fr/comps/12/calendrier/Scores-et-tableaux-La-Liga',
-        'Seria_A_matches':'https://fbref.com/fr/comps/11/calendrier/Scores-et-tableaux-Serie-A',
+        'Serie_A_matches':'https://fbref.com/fr/comps/11/calendrier/Scores-et-tableaux-Serie-A',
         'Bundesliga_matches':'https://fbref.com/fr/comps/20/calendrier/Scores-et-tableaux-Bundesliga',
         'Ligue_1_matches':'https://fbref.com/fr/comps/13/calendrier/Scores-et-tableaux-Ligue-1',
     }
@@ -371,6 +371,7 @@ def main():
         'Ligue_1_players':'https://fbref.com/fr/comps/13/stats/Statistiques-Ligue-1',
     }
     for league, url in leagues_info.items():
+        print(f"Scraping data for {league}...")
         scrape_and_store_data(url, league)
 
     for league, url in leagues_matches.items():

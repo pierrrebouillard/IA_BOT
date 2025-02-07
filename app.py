@@ -264,10 +264,6 @@ def recommend_scorers():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
 
 @app.route('/predict_goal', methods=['POST'])
 def predict_goal():
@@ -289,9 +285,47 @@ def predict_goal():
         "ai_response": response_text
     })
 
-@app.route('/upcoming_matches', methods=['OPTIONS, POST, GET'])
+def get_score_prediction(league, team1, team2):
+    try:
+        conn = sqlite3.connect('football_stats.db')
+        cursor = conn.cursor()
+
+        cursor.execute(f'SELECT * FROM {league} WHERE Team = ?', (team1,))
+        team1_stats = cursor.fetchone()
+
+        cursor.execute(f'SELECT * FROM {league} WHERE Team = ?', (team2,))
+        team2_stats = cursor.fetchone()
+
+        if not team1_stats or not team2_stats:
+            return {"error": "Team data not found"}
+
+        if team1_stats and team2_stats:
+            team1_goals = (team1_stats[5] / team1_stats[1])
+            team2_goals = (team2_stats[5] / team2_stats[1])
+
+            team1_concede = (team1_stats[6] / team1_stats[1])
+            team2_concede = (team2_stats[6] / team2_stats[1])
+
+            predicted_score_team1 = ((team1_goals + team2_concede) / 2) + 0.3
+            predicted_score_team2 = ((team2_goals + team1_concede) / 2) - 0.3
+
+            print(predicted_score_team1)
+            print(predicted_score_team2)
+
+            json = {
+                "predicted_score": {
+                    "team1": round(predicted_score_team1),
+                    "team2": round(predicted_score_team2)
+                }
+            }
+            return json
+        else:
+            return "Insufficient data to predict score."
+    finally:
+        conn.close()
+
+@app.route('/upcoming_matches', methods=['OPTIONS', 'POST', 'GET'])
 def upcoming_matches():
-    print(request.method)
     if request.method == 'OPTIONS':
         headers = {
             'Access-Control-Allow-Origin': 'http://localhost:3000',
@@ -356,45 +390,6 @@ def get_total_goals(league, team1, team2):
     except:
         return {"error": "Error in prediction"}
 
-def get_score_prediction(league, team1, team2):
-    try:
-        conn = sqlite3.connect('football_stats.db')
-        cursor = conn.cursor()
-
-        cursor.execute(f'SELECT * FROM {league} WHERE Team = ?', (team1,))
-        team1_stats = cursor.fetchone()
-
-        cursor.execute(f'SELECT * FROM {league} WHERE Team = ?', (team2,))
-        team2_stats = cursor.fetchone()
-
-        if not team1_stats or not team2_stats:
-            return {"error": "Team data not found"}
-
-        if team1_stats and team2_stats:
-            team1_goals = (team1_stats[5] / team1_stats[1])
-            team2_goals = (team2_stats[5] / team2_stats[1])
-
-            team1_concede = (team1_stats[6] / team1_stats[1])
-            team2_concede = (team2_stats[6] / team2_stats[1])
-
-            predicted_score_team1 = ((team1_goals + team2_concede) / 2) + 0.3
-            predicted_score_team2 = ((team2_goals + team1_concede) / 2) - 0.3
-
-            print(predicted_score_team1)
-            print(predicted_score_team2)
-
-            json = {
-                "predicted_score": {
-                    "team1": round(predicted_score_team1),
-                    "team2": round(predicted_score_team2)
-                }
-            }
-            return json
-        else:
-            return "Insufficient data to predict score."
-    finally:
-        conn.close()
-
 def get_upcoming_matches(league):
     try:
         conn = sqlite3.connect('football_stats.db')
@@ -415,4 +410,6 @@ def get_upcoming_matches(league):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
+
+print(app.url_map)
