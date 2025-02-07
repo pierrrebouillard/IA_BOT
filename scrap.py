@@ -97,6 +97,21 @@ def initialize_db():
             token TEXT
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Match_Probabilities (
+            league TEXT,
+            team1 TEXT,
+            team2 TEXT,
+            date TEXT,
+            prob_win_team1 REAL,
+            prob_draw REAL,
+            prob_win_team2 REAL,
+            predicted_score_team1 INTEGER,
+            predicted_score_team2 INTEGER,
+            top_scorers TEXT,
+            PRIMARY KEY (league, team1, team2, date)
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -370,15 +385,15 @@ def main():
         'Bundesliga_players':'https://fbref.com/fr/comps/20/stats/Statistiques-Bundesliga',
         'Ligue_1_players':'https://fbref.com/fr/comps/13/stats/Statistiques-Ligue-1',
     }
-    for league, url in leagues_info.items():
-        print(f"Scraping data for {league}...")
-        scrape_and_store_data(url, league)
+    # for league, url in leagues_info.items():
+    #     print(f"Scraping data for {league}...")
+    #     scrape_and_store_data(url, league)
 
-    for league, url in leagues_matches.items():
-        scrape_and_store_upcoming_matches(url, league)
+    # for league, url in leagues_matches.items():
+    #     scrape_and_store_upcoming_matches(url, league)
 
-    for league, url in league_player_stats.items():
-        scrape_and_store_playerstat(url, league)
+    # for league, url in league_player_stats.items():
+    #     scrape_and_store_playerstat(url, league)
 
 if __name__ == "__main__":
     main()
