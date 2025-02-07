@@ -23,9 +23,9 @@ CHROMA_DB_PATH = "chroma_db"
 def determine_filter(query: str):
     """
     Détermine, à partir de la requête utilisateur, un filtre à appliquer sur la recherche des documents.
-    Par exemple, si la requête contient "date" et "prochain" (ou "suiv"), on suppose que les informations
-    sur les prochains matchs se trouvent dans la table "match_schedule". Si la requête contient "score",
-    on suppose que les scores se trouvent dans la table "match_scores".
+    - Si la requête contient "date" et ("prochain" ou "suiv"), on suppose que les informations sur les prochains matchs se trouvent dans la table "match_schedule".
+    - Si la requête contient "score", on suppose que les scores se trouvent dans la table "match_scores".
+    - Si la requête contient "probabil" et ("victoire" ou "match"), on suppose qu'il s'agit d'une demande de probabilités de victoire et on renvoie la table "match_probabilities".
     """
     query_lower = query.lower()
     if "date" in query_lower and ("prochain" in query_lower or "suiv" in query_lower):
@@ -34,6 +34,9 @@ def determine_filter(query: str):
     elif "score" in query_lower:
         print("DEBUG: Filtrage sur la table 'match_scores'")
         return {"table": "match_scores"}
+    elif "probabil" in query_lower and ("victoire" in query_lower or "match" in query_lower):
+        print("DEBUG: Filtrage sur la table 'match_probabilities'")
+        return {"table": "match_probabilities"}
     else:
         return None
 
@@ -65,19 +68,21 @@ def process_query(query: str):
     print("DEBUG: Contexte récupéré:")
     print(context)
     
-    # Préparation du prompt pour OpenAI avec une instruction explicite pour renvoyer des dates précises
+    # Préparation du prompt pour OpenAI.
+    # La consigne précise maintenant d'inclure des dates précises et, pour les demandes de probabilités, d'indiquer les probabilités.
     messages = [
         {
-            "role": "system",
-            "content": (
-                "Tu es un expert en paris sportifs. Lorsque tu réponds, indique toujours précisément la date et l'heure du prochain match concerné. "
-                "Réponds uniquement en te basant sur les données fournies ci-dessous, sans utiliser d'informations externes. "
-                "Si les données sont insuffisantes, indique clairement quelles informations manquent."
-            )
+          "role": "system",
+          "content": (
+              "Tu es un expert en paris sportifs. Lorsque tu réponds, indique toujours précisément la date et l'heure du prochain match concerné, "
+              "ou les probabilités de victoire si la requête concerne les match probabilities. "
+              "Réponds uniquement en te basant sur les données fournies ci-dessous, sans utiliser d'informations externes. "
+              "Si les données sont insuffisantes, indique clairement quelles informations manquent."
+          )
         },
         {
-            "role": "user",
-            "content": f"Voici les données pertinentes trouvées :\n{context}\n\nRequête : {query}"
+          "role": "user",
+          "content": f"Voici les données pertinentes trouvées :\n{context}\n\nRequête : {query}"
         }
     ]
     
@@ -96,7 +101,6 @@ def process_query(query: str):
     
     return {"ai_response": chatbot_reply, "context": context}
 
-# Endpoint racine pour éviter le 404
 @app.route("/", methods=["GET"])
 def index():
     return "IA Test API is running", 200

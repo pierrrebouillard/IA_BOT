@@ -50,14 +50,6 @@ export default function Home() {
     setInputMessage("");
   };
 
-
-
-
-
-
-
-
-
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -136,13 +128,13 @@ export default function Home() {
     console.log('Fetching matches for:', league);
   
     axios.post('http://127.0.0.1:5001/upcoming_matches', {
-      league: league.replace(/\s+/g, "_") // Transforme "Premier League" en "Premier_League"
+      league: league.replace(/\s+/g, "_")
     }, {
       headers: {
         'Content-Type': 'application/json',
       }
     }).then((response) => {
-      console.log('Response:', response.data); // Vérifie ce que l'API renvoie
+      console.log('Response:', response.data);
   
       if (response.data && Array.isArray(response.data)) {
         setLeagues(prevLeagues => ({
@@ -150,7 +142,6 @@ export default function Home() {
           [league]: response.data.map(match => ({
             teams: `${match.home_team} vs ${match.away_team}`,
             date: match.date,
-            time: "Heure inconnue" // Si `time` est inexistant, tu peux changer cela selon ton API
           }))
         }));
       } else {
@@ -160,7 +151,6 @@ export default function Home() {
       console.error('Error fetching leagues:', error);
     });
   }
-  
 
   const betTypes = [
     { name: "Résultat du match", icon: <TrophyIcon className="w-5 h-5" /> },
@@ -215,8 +205,6 @@ export default function Home() {
     });
   }
   
-
-
   return (
     <div className="bg-gradient-to-br from-[#150931] to-[#344267] min-h-screen flex flex-col">
       <header className="absolute inset-x-0 top-0 z-50">
