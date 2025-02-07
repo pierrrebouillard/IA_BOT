@@ -1,4 +1,5 @@
-'use client'
+"use client";
+
 import Link from "next/link";
 import { useState } from 'react'
 import { Dialog, DialogPanel } from '@headlessui/react'
@@ -147,127 +148,80 @@ export default function Example() {
           aria-hidden="true"
           className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
         >
-          <div
-            style={{
-              clipPath:
-                'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-            }}
-            className="relative left-[calc(50%-11rem)] aspect-1155/678 w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-linear-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
-          />
+         
         </div>
-        <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-64">
+        <div className="mx-auto max-w-2xl pt-12 pb-32 sm:py-20 lg:py-20">
   
-          <div className="text-center">
-            <h2 className="text-5xl font-semibold tracking-tight text-balance text-white sm:text-6xl">
-            Analyse sportive sans prise de tête, gagnez <br></br>plus avec l'IA !
-            </h2>
-            <p className="mt-8 text-lg font-medium text-pretty text-gray-500 sm:text-l/8">
-            Bêt, l'assistant IA qui vous aide à prendre les meilleures décisions, que vous soyez un parieur prudent ou un amateur de paris audacieux. Simplifiez vos choix, profitez des statistiques fiables !
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <a
-                href="chatbot"
-                className="rounded-full bg-white py-2.5 text-sm font-semibold text-violet px-8 hover:bg-stone-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Essayer Bêt
-              </a>
-              <a
-                href="#section"
-                className="rounded-full bg-violet py-2.5 text-sm font-semibold text-white shadow-xs px-8 border border-white hover:bg-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                En savoir plus
-              </a>
-              {/* <a href="#" className="text-sm/6 font-semibold text-gray-900">
-                Learn more <span aria-hidden="true">→</span>
-              </a> */}
-            </div>
+        <div className="max-w-4xl w-full bg-violet p-8 rounded-lg shadow-lg border border-violet">
+        <h1 className="text-3xl font-bold text-center mb-6">Mentions légales</h1>
+        <p className="text-sm opacity-80 text-center mb-8">Dernière mise à jour : 07/02/2025</p>
+
+        <div className="space-y-6 text-gray-300 text-sm md:text-base">
+        <section>
+            <h2 className="text-lg font-semibold text-white">1. Éditeur du site</h2>
+            <p>Le présent site web, accessible à l’adresse [ajouter l’URL lorsqu’elle sera disponible], est édité dans le cadre d’un projet scolaire sous le nom de Bêt.</p>
+            <p>Les responsables de l’édition du site sont :</p>
+            <ul className="list-disc ml-6">
+              <li>Pierre Bouillard</li>
+              <li>Jules Toublant</li>
+              <li>Gaspard Duplaix</li>
+              <li>Pierre-Yves Rousseau</li>
+              <li>Margaux Lucas</li>
+            </ul>
+            <p>Adresse de contact : Epitech Digital, 33000, France</p>
+            <p>Email : pierre.bouillard@epitech.digital</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white">2. Hébergement du site</h2>
+            <p>Actuellement, le site est hébergé en local, mais son déploiement futur est prévu sur une infrastructure en ligne. L’hébergeur sera précisé lors du passage en production.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white">3. Propriété intellectuelle</h2>
+            <p>L’ensemble des éléments présents sur le site Bêt, y compris son nom, son interface utilisateur, son design, et son intelligence artificielle, sont protégés par le droit de la propriété intellectuelle.</p>
+            <p>Toute reproduction, modification, distribution ou exploitation des contenus sans autorisation préalable des créateurs est strictement interdite.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white">4. Responsabilité</h2>
+            <p>Le site Bêt est un outil d’analyse et de recommandations pour les paris sportifs basé sur des modèles d’intelligence artificielle. Les informations fournies sont purement indicatives et ne garantissent aucun résultat.</p>
+            <p>Les utilisateurs reconnaissent qu’ils sont seuls responsables de leurs décisions et des paris effectués sur des plateformes tierces. Bêt décline toute responsabilité en cas de pertes financières ou d’erreurs d’analyse.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white">5. Données personnelles et cookies</h2>
+            <p>Le site Bêt ne collecte aucune donnée personnelle en dehors des informations nécessaires à la gestion des comptes utilisateurs (email et mot de passe).</p>
+            <p>Aucun cookie ou traceur n’est utilisé sur le site.</p>
+            <p>Les utilisateurs peuvent consulter notre <Link href="/confidentialite" className="text-blue-400 underline">Politique de Confidentialité</Link> pour plus d’informations.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white">6. Loi applicable et juridiction compétente</h2>
+            <p>Les présentes mentions légales sont régies par la loi française. En cas de litige relatif à leur interprétation ou leur application, et en l’absence d’un accord amiable, la juridiction compétente sera le tribunal de Paris, France.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-semibold text-white">7. Contact</h2>
+            <p>Pour toute question relative au site et à son fonctionnement, vous pouvez contacter :</p>
+            <p>📩 <span className="text-blue-400">Jules Toublant</span> - <a href="mailto:jules.toublant@epitech.digital" className="underline">jules.toublant@epitech.digital</a></p>
+          </section>
+        </div>
+
+
+
+            
+            
           </div>
         </div>
         <div
           aria-hidden="true"
           className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
         >
-          <div
-            style={{
-              clipPath:
-                'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-            }}
-            className="relative left-[calc(50%+3rem)] aspect-1155/678 w-[36.125rem] -translate-x-1/2 bg-linear-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
-          />
+          
          
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-purple-900/30 to-transparent" />
-
-
-
-
-      <div id="section" className="bg-violet py-24 sm:py-64">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8 pt-20">
-        <div className="mx-auto max-w-2xl lg:text-center">
-          <h2 className="text-base/7 font-semibold text-claire">Parier plus vite</h2>
-          <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-white sm:text-5xl lg:text-balance">
-          Ce que Bêt fait pour vous
-          </p>
-        </div>
-        <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-6xl">
-          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-11 lg:max-w-none lg:grid-cols-3 lg:gap-y-16">
-            {features.map((feature) => (
-              <div key={feature.name} className="relative pl-16">
-                <dt className="text-base/7 font-semibold text-white">
-                  <div className="absolute top-0 left-0 flex size-10 items-center justify-center rounded-lg bg-claire">
-                    <feature.icon aria-hidden="true" className="size-6 text-white" />
-                  </div>
-                  {feature.name}
-                </dt>
-                <dd className="mt-2 text-base/7 text-white">{feature.description}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </div>
-    </div>
-
-
-
-
-    <div className="bg-violet">
-      <div className="mx-auto max-w-7xl py-24 sm:py-64 sm:px-6 lg:px-8">
-        <div className="relative isolate overflow-hidden justify-center bg-foncé px-6 pt-16 shadow-2xl sm:rounded-3xl sm:px-16 md:pt-24 lg:flex lg:px-24 lg:pt-0">
-          <svg
-            viewBox="0 0 1024 1024"
-            aria-hidden="true"
-            className="absolute top-1/2 left-1/2 -z-10 size-[64rem] -translate-y-1/2 [mask-image:radial-gradient(closest-side,white,transparent)] sm:left-full sm:-ml-80 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2 lg:translate-y-0"
-          >
-            <circle r={512} cx={512} cy={512} fill="url(#759c1415-0410-454c-8f7c-9a820de03641)" fillOpacity="0.7" />
-            <defs>
-              <radialGradient id="759c1415-0410-454c-8f7c-9a820de03641">
-                <stop stopColor="#7440F4" />
-                <stop offset={1} stopColor="#7440F4" />
-              </radialGradient>
-            </defs>
-          </svg>
-          <div className="mx-auto max-w-md text-center items-center justify-center lg:mx-0 lg:flex-auto lg:py-32 lg:text-left">
-            <h2 className="text-3xl font-semibold text-center tracking-tight text-balance text-white sm:text-3xl">
-            Gagnez en précision. Gagnez en confiance, et parier plus intelligemment grâce à l’IA !          
-            </h2>
-            
-            <div className="mt-10 flex text-center items-center gap-x-6 justify-center">
-              <a
-                href="login"
-                className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold  text-gray-900 shadow-xs hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              >
-                Créer un compte
-              </a>
-             
-            </div>
-          </div>
-          <div className="relative mt-28 lg:mt-8">
-            
-          </div>
-        </div>
-      </div>
-    </div>
 
 
 
@@ -284,37 +238,6 @@ export default function Example() {
 
 
 
-    <div className="bg-violet">
-      <div id ="tuto" className="mx-auto max-w-7xl py-24 sm:px-6 sm:py-64 lg:px-8">
-      <div className="mx-auto max-w-2xl lg:text-center">
-          <h2 className="mt-2 text-4xl font-semibold tracking-tight text-center text-pretty text-white sm:text-5xl lg:text-balance">
-          Découvrez Bêt en action !
-          </h2>
-          <p className="mt-8 text-lg font-medium text-pretty text-center sm:pb-14 text-gray-500 sm:text-l/8">
-          Regardez comment Bêt vous aide à analyser, prédire et gagner grâce à l'IA. En moins de 2 minutes, vous apprendrez comment utiliser notre IA pour optimiser vos paris, comment lire nos prédictions et notre échelle de risque et comment suivre vos performances et maximiser vos gains. Regardez maintenant et passez au niveau supérieur !            </p>
-        </div>
-        <div className="relative isolate overflow-hidden justify-center bg-foncé px-6 pt-16 shadow-2xl sm:rounded-3xl sm:px-16 md:pt-24 lg:flex lg:px-24 lg:pt-0">
-          <svg
-            viewBox="0 0 1024 1024"
-            aria-hidden="true"
-            className="absolute top-1/2 left-1/2 -z-10 size-[64rem] -translate-y-1/2 [mask-image:radial-gradient(closest-side,white,transparent)] sm:left-full sm:-ml-80 lg:left-1/2 lg:ml-0 lg:-translate-x-1/2 lg:translate-y-0"
-          >
-            <circle r={512} cx={512} cy={512} fill="url(#759c1415-0410-454c-8f7c-9a820de03641)" fillOpacity="0.7" />
-            <defs>
-              <radialGradient id="759c1415-0410-454c-8f7c-9a820de03641">
-                <stop stopColor="#7440F4" />
-                <stop offset={1} stopColor="#7440F4" />
-              </radialGradient>
-            </defs>
-          </svg>
-          <div className="mx-auto max-w-md text-center items-center justify-center lg:mx-0 lg:flex-auto lg:py-32 lg:text-left">
-            
-          </div>
-          <div className="relative mt-28 lg:mt-8">
-            
-          </div>
-          </div>
-        </div>
 
         <div className="bg-white dark:bg-violet" >
           <div className="mx-auto w-full max-w-screen-xl p-4 pt-64 pb-9 ">
@@ -364,8 +287,6 @@ export default function Example() {
     </div>
 
     
-    </div>
   
   )
 }
-
