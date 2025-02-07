@@ -61,7 +61,7 @@ export default function Example() {
       <header className="absolute inset-x-0 top-0 z-50">
         <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
           <div className="flex lg:flex-1">
-            <a href="#" className="-m-1.5 p-1.5">
+            <a href="." className="-m-1.5 p-1.5">
               <span className="sr-only">Your Company</span>
               <img
                 alt=""
@@ -74,7 +74,7 @@ export default function Example() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+              className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-white"
             >
               <span className="sr-only">Open main menu</span>
               <Bars3Icon aria-hidden="true" className="size-6" />
@@ -90,7 +90,7 @@ export default function Example() {
               ))}
             </div>
             <a href="/login" className="rounded-full bg-claire py-2.5 text-sm font-semibold text-white px-5 hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-              Connexion <span aria-hidden="true">&rarr;</span>
+              Connexion 
             </a>
           </div>
         </nav>
@@ -109,7 +109,7 @@ export default function Example() {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
-                className="-m-2.5 rounded-md p-2.5 text-gray-700"
+                className="-m-2.5 rounded-md p-2.5 text-white"
               >
                 <span className="sr-only">Close menu</span>
                 <XMarkIcon aria-hidden="true" className="size-6" />
@@ -122,7 +122,7 @@ export default function Example() {
                     <a
                       key={item.name}
                       href={item.href}
-                      className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-gray-50"
+                      className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-foncé"
                     >
                       {item.name}
                     </a>
@@ -131,7 +131,7 @@ export default function Example() {
                 <div className="py-6">
                   <a
                     href="/login"
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-gray-50"
+                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-foncé"
                   >
                     Connexion
                   </a>
@@ -166,7 +166,7 @@ export default function Example() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <a
-                href="#"
+                href="chatbot"
                 className="rounded-full bg-white py-2.5 text-sm font-semibold text-violet px-8 hover:bg-stone-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Essayer Bêt
@@ -340,12 +340,11 @@ export default function Example() {
               <div>
                   <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Legal</h2>
                   <ul className="text-gray-500 dark:text-gray-400 font-medium">
-                      <li className="mb-4">
-                          <a href="#" className="hover:underline">Confidentialité</a>
-                      </li>
-                      <li>
-                          <a href="#" className="hover:underline">Sécurité, utilisation<br></br> &amp; Conditions</a>
-                      </li>
+                  <li className="mb-4"><a href="/mentions-legales" className="hover:underline">Mentions légales</a></li>
+              <li className="mb-4"><a href="/confidentialite" className="hover:underline">Politique de Confidentialité</a></li>
+              <li className="mb-4"><a href="/conditions-utilisation" className="hover:underline">Conditions générales d'utilisation</a></li>
+              <li className="mb-4"><a href="/politique-cookies" className="hover:underline">Politique des cookies</a></li>
+              <li><a href="/securite-utilisation" className="hover:underline">Sécurité et utilisation responsable</a></li>
                   </ul>
               </div>
           </div>

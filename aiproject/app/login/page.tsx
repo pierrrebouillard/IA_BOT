@@ -6,7 +6,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
 
 const navigation = [
-  { name: 'Chatbot', href: '#' },
+  { name: 'Chatbot', href: '/chatbot' },
   { name: 'Notre produit', href: '.#section' },
   { name: 'Tuto', href: '.#tuto' },
 ]
@@ -63,7 +63,7 @@ export default function Register() {
                <button
                  type="button"
                  onClick={() => setMobileMenuOpen(true)}
-                 className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700"
+                 className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-white"
                >
                  <span className="sr-only">Open main menu</span>
                  <Bars3Icon aria-hidden="true" className="size-6" />
@@ -96,7 +96,7 @@ export default function Register() {
                  <button
                    type="button"
                    onClick={() => setMobileMenuOpen(false)}
-                   className="-m-2.5 rounded-md p-2.5 text-gray-700"
+                   className="-m-2.5 rounded-md p-2.5 text-white"
                  >
                    <span className="sr-only">Close menu</span>
                    <XMarkIcon aria-hidden="true" className="size-6" />
@@ -109,7 +109,7 @@ export default function Register() {
                        <a
                          key={item.name}
                          href={item.href}
-                         className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-gray-50"
+                         className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-white hover:bg-foncé"
                        >
                          {item.name}
                        </a>
@@ -225,12 +225,11 @@ export default function Register() {
               <div>
                   <h2 className="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Legal</h2>
                   <ul className="text-gray-500 dark:text-gray-400 font-medium">
-                      <li className="mb-4">
-                          <a href="#" className="hover:underline">Confidentialité</a>
-                      </li>
-                      <li>
-                          <a href="#" className="hover:underline">Sécurité, utilisation<br></br> &amp; Conditions</a>
-                      </li>
+                  <li className="mb-4"><a href="/mentions-legales" className="hover:underline">Mentions légales</a></li>
+                  <li className="mb-4"><a href="/confidentialite" className="hover:underline">Politique de Confidentialité</a></li>
+                  <li className="mb-4"><a href="/conditions-utilisation" className="hover:underline">Conditions générales d'utilisation</a></li>
+                  <li className="mb-4"><a href="/politique-cookies" className="hover:underline">Politique des cookies</a></li>
+                  <li><a href="/securite-utilisation" className="hover:underline">Sécurité et utilisation responsable</a></li>
                   </ul>
               </div>
           </div>
