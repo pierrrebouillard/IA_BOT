@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)  # Autorise les requêtes cross-origin
 
 # 🔑 Récupération de la clé API OpenAI
-api_key = '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'
+api_key = ''
 if not api_key:
     raise ValueError("❌ Aucune clé API détectée !")
 openai.api_key = api_key

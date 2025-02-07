@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 # 🔑 Récupération de la clé API OpenAI
 # Remplacez par votre clé ou assurez-vous qu'elle est définie dans vos variables d'environnement
-api_key = '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'
+api_key = ''
 if not api_key:
     raise ValueError("❌ Aucune clé API détectée !")
 openai.api_key = api_key
