@@ -24,11 +24,38 @@ export default function Home() {
   const chatContainerRef = useRef(null);
   
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (inputMessage.trim() === "" || inputMessage.length > 250) return;
     setMessages([...messages, { sender: "user", text: inputMessage }]);
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/chat", {
+        query: inputMessage,
+        league: selectedLeague || "Ligue 1",
+        // Vous pouvez compléter le payload si vous souhaitez passer team1, team2, bet, etc.
+        team1: "",
+        team2: "",
+        bet: "draw"
+      }, {
+        headers: { "Content-Type": "application/json" }
+      });
+      const data = response.data;
+      setMessages((prev) => [...prev, { sender: "bot", text: data.ai_response }]);
+    } catch (error) {
+      console.error("Erreur lors de l'envoi de la requête:", error);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "Une erreur s'est produite lors de la récupération de la réponse." }
+      ]);
+    }
     setInputMessage("");
   };
+
+
+
+
+
+
+
 
 
   useEffect(() => {
