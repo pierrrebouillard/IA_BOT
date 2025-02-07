@@ -5,6 +5,7 @@ import { ChevronDownIcon, ClockIcon, PlusCircleIcon, TrophyIcon, FlagIcon, Chart
 import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import axios from 'axios';
 
 export default function Home() {
   const [isFootballOpen, setIsFootballOpen] = useState(false);
@@ -156,6 +157,34 @@ export default function Home() {
     { name: 'Notre produit', href: '.#section' },
     { name: 'Tuto', href: '.#tuto' },
   ]
+  useEffect(() => {
+    // Appel API pour chaque ligue lors du montage du composant
+    Object.keys(leagues).forEach(league => {
+      fetchLeagues(league);
+    });
+  }, []);
+
+  function fetchLeagues(league) {
+    console.log('Fetching leagues for:', league);
+    axios.post('http://127.0.0.1:5000/upcoming_matches', {
+      league: league
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    }).then((response) => {
+      // Mise à jour de l'état avec les matchs récupérés
+      setLeagues(prevLeagues => ({
+        ...prevLeagues,
+        [league]: response.data.matches // Assurez-vous que `matches` est la clé correcte
+      }));
+    }).catch((error) => {
+      console.error('Error fetching leagues:', error);
+    });
+  
+
+  }
+
 
   return (
     <div className="bg-gradient-to-br from-[#150931] to-[#344267] min-h-screen flex flex-col">
@@ -413,8 +442,3 @@ export default function Home() {
 
   );
 }
-
-
-
-
-

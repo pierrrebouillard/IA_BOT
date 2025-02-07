@@ -48,14 +48,12 @@ export default function Register() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username: formData.email,
+        email: formData.email,
         password: formData.password,
       }),
     });
-
-  
+    window.location.href = "/login";
     console.log("Données soumises :", formData);
-    alert("Inscription réussie !");
   };
 
     return(

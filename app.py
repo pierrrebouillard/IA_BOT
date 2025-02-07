@@ -1,15 +1,16 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import sqlite3
 import json
 import openai
 import hashlib
+import re
+import random
 
 openai.api_key = ''
 
 app = Flask(__name__)
 CORS(app)
-
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -38,6 +39,8 @@ def login():
     data = request.get_json()
     username = data['username']
     password = data['password']
+    print(username)
+    print(password)
 
     hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Simple hashing for demonstration
 
@@ -47,6 +50,7 @@ def login():
     stored_password = cursor.fetchone()
 
     if stored_password and stored_password[0] == hashed_password:
+        #return token and redirect to /chatbot
         return jsonify({"message": "Login successful", "token": stored_password[1]}), 200
     else:
         return jsonify({"error": "Invalid username or password"}), 401
@@ -103,6 +107,57 @@ def predict_score():
         "bet_probability": probability,
         "ai_response": response_text
     })
+
+def get_teams_and_leagues():
+    conn = sqlite3.connect('football_stats.db')
+    cursor = conn.cursor()
+    all_league = {"Premier_League", "Serie_A", "La_Liga", "Bundesliga", "Ligue_1"}
+    for leg in all_league:
+        league = leg
+        cursor.execute(f'SELECT Team, League FROM {league}')
+    teams_data = cursor.fetchall()
+    conn.close()
+    return {team[0].lower(): team[1] for team in teams_data}  # retourne un dictionnaire avec le nom de l'équipe comme clé et la ligue comme valeur
+
+
+def parse_bet_query(query):
+    teams_and_leagues = get_teams_and_leagues()  # Récupère les équipes et leurs ligues
+    found_teams = {}
+
+    for team, league in teams_and_leagues.items():
+        if team in query.lower():  # Recherche insensible à la casse
+            found_teams[team] = league
+
+    if not found_teams:
+        return {"type": "unknown", "error": "No teams found in the query"}
+
+    # Détecter le type de pari et les valeurs spécifiques
+    if "score exact" in query:
+        scores = re.findall(r"(\d+)[\-:](\d+)", query)  # Trouve les motifs de scores comme "2-1" ou "3:0"
+        if scores:
+            return {"type": "exact_score", "teams": teams, "score": scores[0]}
+    elif "nombre de buts" in query:
+        total_goals = re.findall(r"plus de (\d+) buts", query)
+        if total_goals:
+            return {"type": "total_goals", "teams": teams, "total_goals": total_goals[0]}
+    elif "buteur" in query:
+        return {"type": "goal_scorer", "teams": teams, "scorer": "Specific player name needed"}  # Ceci est simplifié
+
+    return {"type": "unknown"}
+
+
+@app.route('/make_bet', methods=['POST'])
+def make_bet():
+    data = request.get_json()
+    bet_query = data['bet_query']
+    parsed_query = parse_bet_query(bet_query)
+
+    if parsed_query['type'] == "unknown":
+        return jsonify({"error": "Query type unknown or missing information"}), 400
+
+    # Traiter le pari ici ou appeler une autre fonction pour gérer le pari
+    return jsonify({"result": parsed_query}), 200
+
 
 def calculate_bet_probability_score(prediction, bet):
     g_team1 = prediction['predicted_score']['team1']
@@ -166,6 +221,54 @@ def calculate_bet_probability_goals(prediction, bet):
     return probability
 
 
+def get_top_scorers(league, team1, team2):
+    conn = sqlite3.connect('football_stats.db')
+    cursor = conn.cursor()
+    try:
+        cursor.execute(f'''
+        SELECT Player, Goals, Team FROM {league}_players_PlayerStats
+        WHERE Goals != 'Buts' AND Goals GLOB '*[0-9]*'
+        AND Team IN (?, ?)
+        ORDER BY Goals DESC
+        LIMIT 6
+        ''', (team1, team2))
+        top_scorers = cursor.fetchall()
+        print(top_scorers)
+    finally:
+        conn.close()
+    return top_scorers
+
+@app.route('/recommend_scorers', methods=['POST', 'GET'])
+def recommend_scorers():
+    league = request.args.get('league')
+    team1 = request.args.get('team1')
+    team2 = request.args.get('team2')
+    
+    if not league or not team1 or not team2:
+        return jsonify({'error': 'Missing required parameters'}), 400
+    
+    try:
+        top_scorers = get_top_scorers(league, team1, team2)
+        recommended_scorers = random.sample(top_scorers, 3)
+        scorers_info = [{'player': scorer[0], 'goals': scorer[1]} for scorer in recommended_scorers]
+        
+        message = f"For the match {team1} vs {team2} in the {league}, the players to watch for scoring are: "
+        players = ', '.join([f"{scorer['player']} ({scorer['goals']} goals)" for scorer in scorers_info])
+        full_message = message + players + ". Good luck with your bets!"
+
+        full_message = generate_textual_response(full_message, '', "50%")
+        
+        return jsonify({'message': full_message, 'scorers': scorers_info})
+    except ValueError:  # Si moins de 3 joueurs sont disponibles pour la sélection
+        return jsonify({'error': 'Not enough players to select from'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
 @app.route('/predict_goal', methods=['POST'])
 def predict_goal():
     data = request.get_json()
@@ -186,12 +289,19 @@ def predict_goal():
         "ai_response": response_text
     })
 
-@app.route('/upcoming_matches', methods=['POST'])
+@app.route('/upcoming_matches', methods=['OPTIONS, POST, GET'])
 def upcoming_matches():
+    print(request.method)
+    if request.method == 'OPTIONS':
+        headers = {
+            'Access-Control-Allow-Origin': 'http://localhost:3000',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, PATCH, DELETE',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Allow-Credentials': 'true'
+        }
+        return Response(status=200, headers=headers)
     data = request.get_json()
-    print(data)
     league = data.get('league')
-    print(league)
     if not league:
         return jsonify({"error": "Missing data for league"}), 400
     return jsonify(get_upcoming_matches(league))

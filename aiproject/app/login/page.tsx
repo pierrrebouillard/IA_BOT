@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { useHistory } from 'react-router-dom';
 
 
 const navigation = [
@@ -41,8 +42,23 @@ export default function Register() {
         username: formData.email,
         password: formData.password,
       }),
+    })
+    .then(response => {
+      console.log(response);
+      if (response.ok) {
+        // redirect to /chatbot
+        console.log('Login successful');
+        window.location.href = '/chatbot';
+        // Handle success
+      } else {
+        response.json().then(data => {
+          console.error('Login failed with data:', data);
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Network or other error', error);
     });
-    // check the response and redirect to the right page
   }
 
     return(
